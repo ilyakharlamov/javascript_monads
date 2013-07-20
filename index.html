@@ -1,0 +1,68 @@
+<html>
+<body>
+	<script type="text/javascript" src="js/jquery/jquery-2.0.3.js"></script>
+	<script type="text/javascript" src="js/setImmediate/setImmediate.js"></script>
+	<script type="text/javascript" src="js/monad/monad.js"></script>
+
+	<script type="text/javascript">
+		console.log("load");
+		(function immediate_invoke () {
+			'use strict'
+			var monadConstructor = function monadConstructor ( ) {
+				//console.log("this1", this);
+				var value = this;
+				var wrapper = function wrapper ( wrapperInput ) {
+					var wrapperInputResult, 
+						name;
+					if ( typeof wrapperInput === 'function' ) {
+						name = wrapperInput.name;
+						//console.log('name', name);
+						if ( typeof Array.prototype[name] === 'function' ) { // call array
+							return monadConstructor.apply( Array.prototype[name].apply(value, [wrapperInput]) );
+						} else {
+							wrapperInputResult = wrapperInput.apply(value, []);
+							return monadConstructor.apply(wrapperInputResult);
+						}
+					}
+				};
+				return wrapper;
+			};
+
+			var _ = {};
+			/*$.ajax('/books').then
+				(function (data) {
+					monadConstructor.apply(data)
+						(function map (i) {
+							return $.ajax('/books/'+i)
+						})
+				});*/
+			var wrappedValue = monadConstructor.apply([10, 20, 30, 40]);
+			wrappedValue
+			/*(function () {
+
+			})*/
+			(function filter (i) {
+				return i < 35;
+			})
+			(function map (i) {
+				return ""+i;
+			})
+			(function console_log () {
+				console.log('this2', this);
+			})/*
+			(function () {
+
+			});*/
+			/*wrappedValue(function () {
+				console.log( "first resolver", this );
+				this.number+=3;
+			})(function () {
+				console.log( "second resolver", this );
+				this.number+=100;
+			})(function () {
+
+			});*/
+		})()
+	</script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 67.0,
+		"selected_items":
+		[
+		],
+		"width": 392.0
+	},
+	"console":
+	{
+		"height": 125.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/my/tmp/2013-07-21/index.html",
+		"/Library/Python/2.7/site-packages/suds/resolver.py",
+		"/Library/Python/2.7/site-packages/suds/mx/literal.py",
+		"/Library/Python/2.7/site-packages/suds/options.py",
+		"/Library/Python/2.7/site-packages/suds/client.py",
+		"/my/tmp/2013-03-28/test.xml",
+		"/Users/jigneshpatel/Documents/1.xml",
+		"/my/tmp/2013-03-28/FinanceTransactionManagerService.xml",
+		"/my/tmp/2013-03-28/test.py",
+		"/Users/jigneshpatel/Documents/2.xml",
+		"/Users/jigneshpatel/Documents/2",
+		"/Library/Python/2.7/site-packages/suds-0.4-py2.7.egg",
+		"/Users/jigneshpatel/Documents/tmp2/Yakovenko_Igor_Grigorevich_-_ Poznanie Rossii.Civilizacionnyj_analiz-left/mobi7/Yakovenko_Igor_Grigorevich_-_ Poznanie Rossii.Civilizacionnyj_analiz-left.html",
+		"/Users/jigneshpatel/Documents/tmp2/Yakovenko_Igor_Grigorevich_-_ Poznanie Rossii.Civilizacionnyj_analiz-left/mobi7/Yakovenko_Igor_Grigorevich_-_ Poznanie Rossii.Civilizacionnyj_analiz-left.ncx",
+		"/Users/jigneshpatel/Documents/tmp2/Yakovenko_Igor_Grigorevich_-_ Poznanie Rossii.Civilizacionnyj_analiz-left/mobi7/Yakovenko_Igor_Grigorevich_-_ Poznanie Rossii.Civilizacionnyj_analiz-left.opf",
+		"/Users/jigneshpatel/Google Drive/books/yakovenko/Yakovenko_Igor_Grigorevich_-_ Poznanie Rossii.Civilizacionnyj_analiz-left/kindlegensrc/html/Yakovenko_Igor_Grigorevich_-_ Poznanie Rossii.Civilizacionnyj_analiz.xhtml",
+		"/my/svn-misc/customers/abstract_customer/config/xsl/test_icml/CWII-9548/temp/SavingProcessGood/xhtmlChangedInEditor-1_1360067842509.xml",
+		"/my/svn-misc/customers/abstract_customer/config/xsl/test_icml/CWII-9548/temp/SavingProcessGood/SourceIndesign_-1.xml",
+		"/Users/jigneshpatel/Downloads/MS-Mediadata (1).xsd",
+		"/my/tmp/2012-07-19/mysite/mysite/urls.py",
+		"/my/jboss/jboss-4.2.2.GA/bin/config/cwweb.prop",
+		"/my/tmp/2012-07-19/mysite/polls/admin.py",
+		"/my/tmp/2012-07-19/mysite/polls/models.py",
+		"/my/tmp/2012-07-19/mysite/mysite/settings.py",
+		"/private/etc/hosts",
+		"/my/svn-cwweb/trunk/ContentWatch/dist/cwweb.prop",
+		"/my/sublime_projects/cwweb",
+		"/my/svn-cwweb/trunk/ContentWatch/web/js/login.js"
+	],
+	"find":
+	{
+		"height": 35.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"item",
+			"print",
+			"doctor",
+			"options",
+			"kindlegen",
+			"toc-anchor-15",
+			"toc-lineglava-45839-0",
+			"package",
+			"veg",
+			".ps"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 0.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 287.0
+	},
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 150.0,
+	"status_bar_visible": true
+}
