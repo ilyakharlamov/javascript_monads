@@ -8,60 +8,189 @@
 		console.log("load");
 		(function immediate_invoke () {
 			'use strict'
-			var monadConstructor = function monadConstructor ( ) {
-				//console.log("this1", this);
-				var value = this;
-				var wrapper = function wrapper ( wrapperInput ) {
-					var wrapperInputResult, 
-						name;
-					if ( typeof wrapperInput === 'function' ) {
-						name = wrapperInput.name;
-						//console.log('name', name);
-						if ( typeof Array.prototype[name] === 'function' ) { // call array
-							return monadConstructor.apply( Array.prototype[name].apply(value, [wrapperInput]) );
-						} else {
-							wrapperInputResult = wrapperInput.apply(value, []);
-							return monadConstructor.apply(wrapperInputResult);
-						}
-					}
-				};
-				return wrapper;
+
+
+
+
+var Deferred = function (/* optional */ canceller) {
+    this.chain = [];
+    this.id = this._nextId();
+    this.fired = -1;
+    this.paused = 0;
+    this.results = [null, null];
+    this.canceller = canceller;
+    this.silentlyCancelled = false;
+    this.chained = false;
+};
+
+
+Deferred.prototype = {
+    /** @id Deferred.prototype.repr */
+    repr: function () {
+        var state;
+        if (this.fired == -1) {
+            state = 'unfired';
+        } else if (this.fired === 0) {
+            state = 'success';
+        } else {
+            state = 'error';
+        }
+        return 'Deferred(' + this.id + ', ' + state + ')';
+    },
+
+    _nextId: function (n/* = 1 */) {
+        if (arguments.length === 0) {
+            n = 1;
+        }
+        return function () {
+            return n++;
+        };
+    },
+
+    /** @id Deferred.prototype.cancel */
+    cancel: function () {
+        if (this.fired == -1) {
+            if (this.canceller) {
+                this.canceller(this);
+            } else {
+                this.silentlyCancelled = true;
+            }
+            if (this.fired == -1) {
+                this.errback(new Error(this));
+            }
+        } else if ((this.fired === 0) && (this.results[0] instanceof Deferred)) {
+            this.results[0].cancel();
+        }
+    },
+
+    _resback: function (res) {
+        /***
+
+        The primitive that means either callback or errback
+
+        ***/
+        this.fired = ((res instanceof Error) ? 1 : 0);
+        this.results[this.fired] = res;
+        this._fire();
+    },
+
+    _check: function () {
+        if (this.fired != -1) {
+            if (!this.silentlyCancelled) {
+                throw new Error(this);
+            }
+            this.silentlyCancelled = false;
+            return;
+        }
+    },
+
+    /** @id Deferred.prototype.callback */
+    callback: function (res) {
+        this._check();
+        if (res instanceof Deferred) {
+            throw new Error("Deferred instances can only be chained if they are the result of a callback");
+        }
+        this._resback(res);
+    },
+
+    /** @id Deferred.prototype.errback */
+    errback: function (res) {
+        this._check();
+        if (res instanceof self.Deferred) {
+            throw new Error("Deferred instances can only be chained if they are the result of a callback");
+        }
+        if (!(res instanceof Error)) {
+            res = new Error(res);
+        }
+        this._resback(res);
+    },
+
+    /** @id Deferred.prototype.addCallbacks */
+    addCallbacks: function (cb, eb) {
+        if (this.chained) {
+            throw new Error("Chained Deferreds can not be re-used");
+        }
+        this.chain.push([cb, eb]);
+        if (this.fired >= 0) {
+            this._fire();
+        }
+        return this;
+    },
+
+    _fire: function () {
+        /***
+
+        Used internally to exhaust the callback sequence when a result
+        is available.
+
+        ***/
+        var chain = this.chain;
+        var fired = this.fired;
+        var res = this.results[fired];
+        var self = this;
+        var cb = null;
+        while (chain.length > 0 && this.paused === 0) {
+            // Array
+            var pair = chain.shift();
+            var f = pair[fired];
+            if (f === null) {
+                continue;
+            }
+            try {
+                res = f(res);
+                fired = ((res instanceof Error) ? 1 : 0);
+                if (res instanceof Deferred) {
+                    cb = function (res) {
+                        self._resback(res);
+                        self.paused--;
+                        if ((self.paused === 0) && (self.fired >= 0)) {
+                            self._fire();
+                        }
+                    };
+                    this.paused++;
+                }
+            } catch (err) {
+                fired = 1;
+                if (!(err instanceof Error)) {
+                    err = new Error(err);
+                }
+                res = err;
+            }
+        }
+        this.fired = fired;
+        this.results[fired] = res;
+        if (cb && this.paused) {
+            // this is for "tail recursion" in case the dependent deferred
+            // is already fired
+            res.addBoth(cb);
+            res.chained = true;
+        }
+    }
+};
+
+
+			var monadConstructorAsync = function monadConstructorAsync () {
+				return new Deferred();
 			};
 
-			var _ = {};
-			/*$.ajax('/books').then
-				(function (data) {
-					monadConstructor.apply(data)
-						(function map (i) {
-							return $.ajax('/books/'+i)
-						})
-				});*/
-			var wrappedValue = monadConstructor.apply([10, 20, 30, 40]);
-			wrappedValue
-			/*(function () {
 
+
+			var monadInstance = monadConstructorAsync.apply([10]);
+			console.log(monadInstance)
+			/*list
+			(function this1 () {
+				console.log('this1', this);
+				return this;
 			})*/
-			(function filter (i) {
-				return i < 35;
-			})
-			(function map (i) {
-				return ""+i;
-			})
-			(function console_log () {
+			/*(function this2 () {
 				console.log('this2', this);
-			})/*
-			(function () {
-
-			});*/
-			/*wrappedValue(function () {
-				console.log( "first resolver", this );
-				this.number+=3;
-			})(function () {
-				console.log( "second resolver", this );
-				this.number+=100;
-			})(function () {
-
-			});*/
+				return this;
+			})
+			(function this3 () {
+				console.log('this3', this);
+				return this;
+			})*/
+			console.log("load end");
 		})()
 	</script>
 </body>
