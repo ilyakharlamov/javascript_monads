@@ -57,8 +57,12 @@
 			};
 
 			_.console = function console (args, fn) { // better logging inside functions
-                var thisname=_.getStack(2).fn;
-                window.console.debug(thisname+'(', args,')');
+				if (console.counter === undefined) {
+					console.counter=1;
+				}
+                var thisname=_.getStack(2).fn,
+                	counter = console.counter++;
+                window.console.debug(counter+':'+thisname+'(', args,')');
                 var key,
                 	consoleproxy = {},
                 	keys = ['log', 'error', 'debug', 'info'],
@@ -67,7 +71,7 @@
                         key = keys[ i ];
                         if (typeof window.console[key]=='function'){
                                 consoleproxy[key] = function () {
-                                        Array.prototype.unshift.call(arguments, '\t'+thisname+'():'+_.formatdate.call(new Date(),'hh:mm:ss,S'))
+                                        Array.prototype.unshift.call(arguments, '\t'+counter+':'+thisname+'():'+_.formatdate.call(new Date(),'hh:mm:ss,S'))
                                         window.console[key].apply(window.console, arguments);
                                 };
                         }
