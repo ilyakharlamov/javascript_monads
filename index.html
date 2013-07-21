@@ -8,6 +8,36 @@
 		console.log("load");
 		(function immediate_invoke () {
 			'use strict'
+			var _={};
+			_.getStack = function getStack(n) {
+			var stacks = [];
+			  try {
+			    throw new Error("Test")
+			    
+			  } catch (e) {
+			    var stack = e.stack.split("\n");
+			    for ( var i = 0,j = stack.length;i<j;i++) {
+			      var current = stack[i].match(/^(?:\s*at? ?)?(.+?)(?:@| )\(?(.*?):[^\/](\d*):?(\d*)?/)
+			      if (current == null) {
+			         continue 
+			      }
+			      var entry = {
+			        fn:current[1]||"anonymous",
+			        file:current[2]||"unknown",
+			        line:~~current[3],
+			        column:~~current[4],
+			        time:new Date().getTime()
+			      }
+			      if ("getStack" !== entry.fn)
+			        stacks.push(entry);
+			    }
+			  } finally {
+			    return "number"=== typeof n?stacks[n]:stacks;
+			  }
+			};
+			_.getThisName = function getThisName() {
+    			return getStack(1).fn;
+			};
 
 
 
