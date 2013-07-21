@@ -77,169 +77,127 @@
 
 
 
-var Deferred = function (/* optional */ canceller) {
-    this.chain = [];
-    this.id = this._nextId();
-    this.fired = -1;
-    this.paused = 0;
-    this.results = [null, null];
-    this.canceller = canceller;
-    this.silentlyCancelled = false;
-    this.chained = false;
-};
+			var CreateDeferredMonad = function () {
+			    this.chain = [];
+			    this.id = function (n/* = 1 */) {
+			        if (arguments.length === 0) {
+			            n = 1;
+			        }
+			        return function () {
+			            return n++;
+			        };
+			    }();
+			    this.fired = -1;
+			    this.paused = 0;
+			    this.results = [null, null];
+			    this.chained = false;
+			};
 
 
-Deferred.prototype = {
-    /** @id Deferred.prototype.repr */
-    repr: function () {
-        var state;
-        if (this.fired == -1) {
-            state = 'unfired';
-        } else if (this.fired === 0) {
-            state = 'success';
-        } else {
-            state = 'error';
-        }
-        return 'Deferred(' + this.id + ', ' + state + ')';
-    },
+			CreateDeferredMonad.prototype = {
+			    _resback: function (res) {
+			        /***
 
-    _nextId: function (n/* = 1 */) {
-        if (arguments.length === 0) {
-            n = 1;
-        }
-        return function () {
-            return n++;
-        };
-    },
+			        The primitive that means either callback or errback
 
-    /** @id Deferred.prototype.cancel */
-    cancel: function () {
-        if (this.fired == -1) {
-            if (this.canceller) {
-                this.canceller(this);
-            } else {
-                this.silentlyCancelled = true;
-            }
-            if (this.fired == -1) {
-                this.errback(new Error(this));
-            }
-        } else if ((this.fired === 0) && (this.results[0] instanceof Deferred)) {
-            this.results[0].cancel();
-        }
-    },
+			        ***/
+			        this.fired = ((res instanceof Error) ? 1 : 0);
+			        this.results[this.fired] = res;
+			        this._fire();
+			    },
 
-    _resback: function (res) {
-        /***
+			    /** @id CreateDeferredMonad.prototype.callback */
+			    callback: function (res) {
+			        if (res instanceof CreateDeferredMonad) {
+			            throw new Error("CreateDeferredMonad instances can only be chained if they are the result of a callback");
+			        }
+			        this._resback(res);
+			    },
 
-        The primitive that means either callback or errback
+			    /** @id CreateDeferredMonad.prototype.errback */
+			    errback: function (res) {
+			        if (res instanceof self.CreateDeferredMonad) {
+			            throw new Error("CreateDeferredMonad instances can only be chained if they are the result of a callback");
+			        }
+			        if (!(res instanceof Error)) {
+			            res = new Error(res);
+			        }
+			        this._resback(res);
+			    },
 
-        ***/
-        this.fired = ((res instanceof Error) ? 1 : 0);
-        this.results[this.fired] = res;
-        this._fire();
-    },
+			    /** @id CreateDeferredMonad.prototype.addCallbacks */
+			    addCallbacks: function (cb, eb) {
+			        if (this.chained) {
+			            throw new Error("Chained CreateDeferredMonads can not be re-used");
+			        }
+			        this.chain.push([cb, eb]);
+			        if (this.fired >= 0) {
+			            this._fire();
+			        }
+			        return this;
+			    },
 
-    _check: function () {
-        if (this.fired != -1) {
-            if (!this.silentlyCancelled) {
-                throw new Error(this);
-            }
-            this.silentlyCancelled = false;
-            return;
-        }
-    },
+			    _fire: function () {
+			    	var console=_.console(arguments);
+			        /***
 
-    /** @id Deferred.prototype.callback */
-    callback: function (res) {
-        this._check();
-        if (res instanceof Deferred) {
-            throw new Error("Deferred instances can only be chained if they are the result of a callback");
-        }
-        this._resback(res);
-    },
+			        Used internally to exhaust the callback sequence when a result
+			        is available.
 
-    /** @id Deferred.prototype.errback */
-    errback: function (res) {
-        this._check();
-        if (res instanceof self.Deferred) {
-            throw new Error("Deferred instances can only be chained if they are the result of a callback");
-        }
-        if (!(res instanceof Error)) {
-            res = new Error(res);
-        }
-        this._resback(res);
-    },
-
-    /** @id Deferred.prototype.addCallbacks */
-    addCallbacks: function (cb, eb) {
-        if (this.chained) {
-            throw new Error("Chained Deferreds can not be re-used");
-        }
-        this.chain.push([cb, eb]);
-        if (this.fired >= 0) {
-            this._fire();
-        }
-        return this;
-    },
-
-    _fire: function () {
-        /***
-
-        Used internally to exhaust the callback sequence when a result
-        is available.
-
-        ***/
-        var chain = this.chain;
-        var fired = this.fired;
-        var res = this.results[fired];
-        var self = this;
-        var cb = null;
-        while (chain.length > 0 && this.paused === 0) {
-            // Array
-            var pair = chain.shift();
-            var f = pair[fired];
-            if (f === null) {
-                continue;
-            }
-            try {
-                res = f(res);
-                fired = ((res instanceof Error) ? 1 : 0);
-                if (res instanceof Deferred) {
-                    cb = function (res) {
-                        self._resback(res);
-                        self.paused--;
-                        if ((self.paused === 0) && (self.fired >= 0)) {
-                            self._fire();
-                        }
-                    };
-                    this.paused++;
-                }
-            } catch (err) {
-                fired = 1;
-                if (!(err instanceof Error)) {
-                    err = new Error(err);
-                }
-                res = err;
-            }
-        }
-        this.fired = fired;
-        this.results[fired] = res;
-        if (cb && this.paused) {
-            // this is for "tail recursion" in case the dependent deferred
-            // is already fired
-            res.addBoth(cb);
-            res.chained = true;
-        }
-    }
-};
-
-
-			var monadConstructorAsync = function monadConstructorAsync () {
+			        ***/
+			        var chain = this.chain;
+			        var fired = this.fired;
+			        console.debug('fired', fired);
+			        var res = this.results[fired];
+			        var self = this;
+			        var cb = null;
+			        while (chain.length > 0 && this.paused === 0) {
+			            // Array
+			            var pair = chain.shift();
+			            var f = pair[fired];
+			            if (f === null) {
+			                continue;
+			            }
+			            try {
+			                res = f(res);
+			                fired = ((res instanceof Error) ? 1 : 0);
+			                if (res instanceof CreateDeferredMonad) {
+			                    cb = function (res) {
+			                        self._resback(res);
+			                        self.paused--;
+			                        if ((self.paused === 0) && (self.fired >= 0)) {
+			                            self._fire();
+			                        }
+			                    };
+			                    this.paused++;
+			                }
+			            } catch (err) {
+			                fired = 1;
+			                if (!(err instanceof Error)) {
+			                    err = new Error(err);
+			                }
+			                res = err;
+			            }
+			        }
+			        this.fired = fired;
+			        this.results[fired] = res;
+			        if (cb && this.paused) {
+			            // this is for "tail recursion" in case the dependent deferred
+			            // is already fired
+			            res.addBoth(cb);
+			            res.chained = true;
+			        }
+			    }
+			};
+			var asyncMonadConstructor = function asyncMonadConstructor () {
 				var console=_.console(arguments);
-				var deferred = new Deferred();
-				if (!(this instanceof Deferred)) {
-					console.debug('this', this);
-					deferred.callback(this);
+				var that = this;
+				var deferred = new CreateDeferredMonad();
+				if (!(this instanceof CreateDeferredMonad)) {
+					console.debug('this is instanceof CreateDeferredMonad', this);
+					setImmediate(function () {
+						deferred.callback(that);
+					})
 				} else {
 					console.debug('this else', this);
 				}
@@ -248,10 +206,10 @@ Deferred.prototype = {
 
 
 
-			var monadInstance = monadConstructorAsync.apply([10]);
-			monadInstance.addCallbacks(function callback (data) {
+			var monadInstance = asyncMonadConstructor.apply([10]);
+			monadInstance.addCallbacks(function callback () {
 				var console=_.console(arguments);
-				console.log('this');
+				console.log('this', this);
 			});
 			/*list
 			(function this1 () {
