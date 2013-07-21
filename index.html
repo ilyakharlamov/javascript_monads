@@ -56,6 +56,24 @@
     			return getStack(1).fn;
 			};
 
+			_.console = function console (args, fn) { // better logging inside functions
+                var thisname=_.getStack(2).fn;
+                window.console.debug(thisname+'(', args,')');
+                var key,
+                	consoleproxy = {},
+                	keys = ['log', 'error', 'debug', 'info'],
+                	i=keys.length;
+                while (i--) {
+                        key = keys[ i ];
+                        if (typeof window.console[key]=='function'){
+                                consoleproxy[key] = function () {
+                                        Array.prototype.unshift.call(arguments, '\t'+thisname+'():'+_.formatdate.call(new Date(),'hh:mm:ss,S'))
+                                        window.console[key].apply(window.console, arguments);
+                                };
+                        }
+                }
+                return consoleproxy;
+        	};
 
 
 
@@ -217,13 +235,24 @@ Deferred.prototype = {
 
 
 			var monadConstructorAsync = function monadConstructorAsync () {
-				return new Deferred();
+				var console=_.console(arguments);
+				var deferred = new Deferred();
+				if (!(this instanceof Deferred)) {
+					console.debug('this', this);
+					deferred.callback(this);
+				} else {
+					console.debug('this else', this);
+				}
+				return deferred;
 			};
 
 
 
 			var monadInstance = monadConstructorAsync.apply([10]);
-			console.log(monadInstance)
+			monadInstance.addCallbacks(function callback (data) {
+				var console=_.console(arguments);
+				console.log('this');
+			});
 			/*list
 			(function this1 () {
 				console.log('this1', this);
