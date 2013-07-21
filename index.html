@@ -80,6 +80,11 @@
 			var sharedMonadMethods = function () {
 			};
 			sharedMonadMethods.prototype = {
+				chain : [],
+			    fired : -1,
+			    paused : 0,
+			    results : [null, null],
+			    chained : false,
 			    _resback: function (res) {
 			        /***
 
@@ -89,6 +94,15 @@
 			        this.fired = ((res instanceof Error) ? 1 : 0);
 			        this.results[this.fired] = res;
 			        this._fire();
+			    },
+
+			    counter : function (n/* = 1 */) {
+			        if (arguments.length === 0) {
+			            n = 1;
+			        }
+			        return function () {
+			            return n++;
+			        };
 			    },
 
 			    /** @id CreateDeferredMonad.prototype.callback */
@@ -178,30 +192,14 @@
 			};
 
 
-			var CreateDeferredMonad = function () {
-
-				var that = Object.create(sharedMonadMethods.prototype);
-			    that.chain = [];
-			    that.id = function (n/* = 1 */) {
-			        if (arguments.length === 0) {
-			            n = 1;
-			        }
-			        return function () {
-			            return n++;
-			        };
-			    }();
-			    that.fired = -1;
-			    that.paused = 0;
-			    that.results = [null, null];
-			    that.chained = false;
-			    return that;
-			};
-
 			var asyncMonadConstructor = function asyncMonadConstructor () {
 				var console=_.console(arguments);
 				var that = this;
-				var deferred = CreateDeferredMonad();
-				if (!(this instanceof CreateDeferredMonad)) {
+
+				var deferred = Object.create(sharedMonadMethods.prototype);
+				deferred.id = deferred.counter();
+
+				if (!(this instanceof sharedMonadMethods)) {
 					console.debug('this is not instanceof CreateDeferredMonad', this);
 					setImmediate(function () {
 						deferred.callback(that);
